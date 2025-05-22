@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Polyline, CircleMarker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 // --- Battlefield data (simplified & georeferenced) ---
@@ -8,7 +8,7 @@ import "leaflet/dist/leaflet.css";
 const unitData = [
   {
     name: "Roman Column (Legiones & Allies)",
-    color: "#f87171", // Tailwind red-400
+    color: "#0072B2", // color-blind friendly blue
     path: [
       [43.192, 12.062], // near Passignano – column entry to the lakeside road
       [43.190, 12.080],
@@ -18,7 +18,7 @@ const unitData = [
   },
   {
     name: "Carthaginian Main Infantry",
-    color: "#60a5fa", // Tailwind blue-400
+    color: "#D55E00", // color-blind friendly orange
     path: [
       [43.202, 12.076], // ridge north-west of the Roman route
       [43.198, 12.090],
@@ -27,7 +27,7 @@ const unitData = [
   },
   {
     name: "Carthaginian Cavalry & Numidians (blocking force)",
-    color: "#818cf8", // Tailwind indigo-400
+    color: "#009E73", // color-blind friendly green
     path: [
       [43.190, 12.135], // east gate of the defile – hidden beyond morning mists
       [43.190, 12.115] // rides west to seal Roman escape
@@ -35,7 +35,7 @@ const unitData = [
   },
   {
     name: "Gallic & Iberian Contingents (left wing)",
-    color: "#4ade80", // Tailwind green-400
+    color: "#CC79A7", // color-blind friendly purple
     path: [
       [43.205, 12.070],
       [43.197, 12.084],
@@ -114,6 +114,7 @@ export default function TrasimeneBattleMap() {
                   fillOpacity: 0.9,
                 }}
               >
+                <Tooltip direction="top" offset={[0, -8]}>{unit.name}</Tooltip>
                 <Popup>{unit.name}</Popup>
               </CircleMarker>
             </React.Fragment>
