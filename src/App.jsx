@@ -93,7 +93,11 @@ export default function TrasimeneBattleMap() {
         style={{ height: "100%", width: "100%" }}
         className="w-full h-full"
       >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        {/* Base map with relief to display topography */}
+        <TileLayer
+          url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+          attribution="Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap (CC-BY-SA)"
+        />
 
         {/* Render polylines & animated markers */}
         {unitData.map((unit, idx) => {
