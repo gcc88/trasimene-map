@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, Polyline, Marker, Popup, Tooltip } from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 // --- Battlefield data (simplified & georeferenced) ---
@@ -9,6 +10,7 @@ const unitData = [
   {
     name: "Roman Column (Legiones & Allies)",
     color: "#0072B2", // color-blind friendly blue
+    animation: "anim-roman",
     path: [
       [43.192, 12.062], // near Passignano – column entry to the lakeside road
       [43.190, 12.080],
@@ -19,6 +21,7 @@ const unitData = [
   {
     name: "Carthaginian Main Infantry",
     color: "#D55E00", // color-blind friendly orange
+    animation: "anim-infantry",
     path: [
       [43.202, 12.076], // ridge north-west of the Roman route
       [43.198, 12.090],
@@ -28,6 +31,7 @@ const unitData = [
   {
     name: "Carthaginian Cavalry & Numidians (blocking force)",
     color: "#009E73", // color-blind friendly green
+    animation: "anim-cavalry",
     path: [
       [43.190, 12.135], // east gate of the defile – hidden beyond morning mists
       [43.190, 12.115] // rides west to seal Roman escape
@@ -36,6 +40,7 @@ const unitData = [
   {
     name: "Gallic & Iberian Contingents (left wing)",
     color: "#CC79A7", // color-blind friendly purple
+    animation: "anim-gaul",
     path: [
       [43.205, 12.070],
       [43.197, 12.084],
@@ -61,6 +66,16 @@ export default function TrasimeneBattleMap() {
   const [speed, setSpeed] = useState(0.01); // increment per tick (~500 ms)
   const [visibleUnits, setVisibleUnits] = useState(unitData.map(() => true));
   const playingRef = useRef(true);
+  const iconsRef = useRef(
+    unitData.map((u) =>
+      L.divIcon({
+        html: `<div class="unit-icon ${u.animation}" style="background:${u.color}"></div>`,
+        className: "",
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+      })
+    )
+  );
 
   // advance timeline
   useEffect(() => {
@@ -109,18 +124,10 @@ export default function TrasimeneBattleMap() {
                 positions={unit.path}
                 pathOptions={{ color: unit.color, weight: 3, dashArray: "4 6" }}
               />
-              <CircleMarker
-                center={pos}
-                radius={6}
-                pathOptions={{
-                  color: unit.color,
-                  fillColor: unit.color,
-                  fillOpacity: 0.9,
-                }}
-              >
+              <Marker position={pos} icon={iconsRef.current[idx]}>
                 <Tooltip direction="top" offset={[0, -8]}>{unit.name}</Tooltip>
                 <Popup>{unit.name}</Popup>
-              </CircleMarker>
+              </Marker>
             </React.Fragment>
           );
         })}
