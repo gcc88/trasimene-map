@@ -59,6 +59,7 @@ function interpolate(path, t) {
 export default function TrasimeneBattleMap() {
   const [time, setTime] = useState(0); // 0–1
   const [speed, setSpeed] = useState(0.01); // increment per tick (~500 ms)
+  const [visibleUnits, setVisibleUnits] = useState(unitData.map(() => true));
   const playingRef = useRef(true);
 
   // advance timeline
@@ -75,6 +76,12 @@ export default function TrasimeneBattleMap() {
   const togglePlay = () => (playingRef.current = !playingRef.current);
   const slower = () => setSpeed((s) => Math.max(s / 2, 0.0025));
   const faster = () => setSpeed((s) => Math.min(s * 2, 0.08));
+  const toggleUnit = (idx) =>
+    setVisibleUnits((v) => {
+      const copy = [...v];
+      copy[idx] = !copy[idx];
+      return copy;
+    });
 
   return (
     <div className="w-full h-screen relative">
@@ -90,17 +97,51 @@ export default function TrasimeneBattleMap() {
 
         {/* Render polylines & animated markers */}
         {unitData.map((unit, idx) => {
+          if (!visibleUnits[idx]) return null;
           const pos = interpolate(unit.path, time);
           return (
             <React.Fragment key={idx}>
-              <Polyline positions={unit.path} pathOptions={{ color: unit.color, weight: 3, dashArray: "4 6" }} />
-              <CircleMarker center={pos} radius={6} pathOptions={{ color: unit.color, fillColor: unit.color, fillOpacity: 0.9 }}>
+              <Polyline
+                positions={unit.path}
+                pathOptions={{ color: unit.color, weight: 3, dashArray: "4 6" }}
+              />
+              <CircleMarker
+                center={pos}
+                radius={6}
+                pathOptions={{
+                  color: unit.color,
+                  fillColor: unit.color,
+                  fillOpacity: 0.9,
+                }}
+              >
                 <Popup>{unit.name}</Popup>
               </CircleMarker>
             </React.Fragment>
           );
         })}
       </MapContainer>
+
+      {/* Legend */}
+      <div className="absolute top-4 left-4 z-50 bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl p-4 text-sm">
+        <p className="font-semibold mb-2">Units</p>
+        <div className="flex flex-col gap-1">
+          {unitData.map((unit, idx) => (
+            <label key={idx} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={visibleUnits[idx]}
+                onChange={() => toggleUnit(idx)}
+                className="cursor-pointer"
+              />
+              <span
+                className="w-4 h-4 rounded-sm"
+                style={{ backgroundColor: unit.color }}
+              />
+              <span>{unit.name}</span>
+            </label>
+          ))}
+        </div>
+      </div>
 
       {/* Control Panel */}
       <div className="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl p-4 flex flex-col gap-2 text-sm items-end">
