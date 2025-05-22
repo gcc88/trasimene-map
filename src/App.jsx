@@ -103,9 +103,22 @@ export default function TrasimeneBattleMap() {
       </MapContainer>
 
       {/* Control Panel */}
-      <div className="absolute top-4 left-4 z-50 bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl p-4 flex flex-col gap-2 text-sm">
-        <div className="font-semibold text-gray-700">Timeline: {(time * 100).toFixed(0)}%</div>
-        <div className="flex gap-2">
+      <div className="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl p-4 flex flex-col gap-2 text-sm items-end">
+        <div className="flex items-center gap-3 w-full">
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={time}
+            onChange={(e) => setTime(parseFloat(e.target.value))}
+            className="flex-grow cursor-pointer"
+          />
+          <span className="font-semibold text-gray-700 min-w-[3rem] text-right">
+            {(time * 100).toFixed(0)}%
+          </span>
+        </div>
+        <div className="flex gap-2 self-end">
           <button className="px-3 py-1 rounded-lg bg-gray-800 text-white" onClick={togglePlay}>
             {playingRef.current ? "Pause" : "Play"}
           </button>
@@ -116,8 +129,8 @@ export default function TrasimeneBattleMap() {
             Faster +
           </button>
         </div>
-        <p className="mt-1 text-gray-500 max-w-xs">
-          Click on unit markers to see their identity. Use the controls to change playback speed or pause the action.
+        <p className="mt-1 text-gray-500 max-w-xs text-right">
+          Click on unit markers to see their identity. Use the slider or buttons to control playback.
         </p>
       </div>
     </div>
