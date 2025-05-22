@@ -49,6 +49,30 @@ const unitData = [
   }
 ];
 
+// Basic narrative phases tied to the timeline percentage
+const battlePhases = [
+  {
+    start: 0,
+    end: 0.25,
+    text: "Roman column marches along the lakeshore"
+  },
+  {
+    start: 0.25,
+    end: 0.5,
+    text: "Hannibal's infantry closes in from the ridges"
+  },
+  {
+    start: 0.5,
+    end: 0.75,
+    text: "Gallic and Iberian wings strike the Roman flank"
+  },
+  {
+    start: 0.75,
+    end: 1,
+    text: "Carthaginian cavalry seals the eastern exit"
+  }
+];
+
 // Linear interpolation helper for small polyline segments
 function interpolate(path, t) {
   if (t <= 0) return path[0];
@@ -97,6 +121,10 @@ export default function TrasimeneBattleMap() {
       copy[idx] = !copy[idx];
       return copy;
     });
+
+  const currentPhase =
+    battlePhases.find((p) => time >= p.start && time < p.end) ||
+    battlePhases[battlePhases.length - 1];
 
   return (
     <div className="w-full h-screen relative">
@@ -185,6 +213,12 @@ export default function TrasimeneBattleMap() {
         <p className="mt-1 text-gray-500 max-w-xs text-right">
           Click on unit markers to see their identity. Use the slider or buttons to control playback.
         </p>
+      </div>
+
+      {/* Battle phase description */}
+      <div className="absolute bottom-4 right-4 z-50 bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl p-4 max-w-xs text-sm">
+        <p className="font-semibold mb-2">Battle Phase</p>
+        <p>{currentPhase.text}</p>
       </div>
     </div>
   );
