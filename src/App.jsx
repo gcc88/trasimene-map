@@ -1,0 +1,128 @@
+import React, { useState, useEffect, useRef } from "react";
+import { MapContainer, TileLayer, Polyline, CircleMarker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
+// --- Battlefield data (simplified & georeferenced) ---
+// Coordinates focus on the northern shore of modern Lago Trasimeno (Umbria–Tuscany border, Italy)
+// All positions are approximate and intended for didactic visualisation
+const unitData = [
+  {
+    name: "Roman Column (Legiones & Allies)",
+    color: "#f87171", // Tailwind red-400
+    path: [
+      [43.192, 12.062], // near Passignano – column entry to the lakeside road
+      [43.190, 12.080],
+      [43.188, 12.100],
+      [43.188, 12.120] // toward Tuoro pass (ambush exit)
+    ]
+  },
+  {
+    name: "Carthaginian Main Infantry",
+    color: "#60a5fa", // Tailwind blue-400
+    path: [
+      [43.202, 12.076], // ridge north-west of the Roman route
+      [43.198, 12.090],
+      [43.195, 12.100] // closes south onto the road
+    ]
+  },
+  {
+    name: "Carthaginian Cavalry & Numidians (blocking force)",
+    color: "#818cf8", // Tailwind indigo-400
+    path: [
+      [43.190, 12.135], // east gate of the defile – hidden beyond morning mists
+      [43.190, 12.115] // rides west to seal Roman escape
+    ]
+  },
+  {
+    name: "Gallic & Iberian Contingents (left wing)",
+    color: "#4ade80", // Tailwind green-400
+    path: [
+      [43.205, 12.070],
+      [43.197, 12.084],
+      [43.192, 12.092] // descends on Roman rear/flank
+    ]
+  }
+];
+
+// Linear interpolation helper for small polyline segments
+function interpolate(path, t) {
+  if (t <= 0) return path[0];
+  const segments = path.length - 1;
+  const segFloat = t * segments;
+  const idx = Math.floor(segFloat);
+  const frac = segFloat - idx;
+  const p1 = path[idx];
+  const p2 = path[idx + 1] || p1;
+  return [p1[0] + (p2[0] - p1[0]) * frac, p1[1] + (p2[1] - p1[1]) * frac];
+}
+
+export default function TrasimeneBattleMap() {
+  const [time, setTime] = useState(0); // 0–1
+  const [speed, setSpeed] = useState(0.01); // increment per tick (~500 ms)
+  const playingRef = useRef(true);
+
+  // advance timeline
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (playingRef.current) {
+        setTime((prev) => (prev + speed) % 1);
+      }
+    }, 500);
+    return () => clearInterval(id);
+  }, [speed]);
+
+  // UI handlers
+  const togglePlay = () => (playingRef.current = !playingRef.current);
+  const slower = () => setSpeed((s) => Math.max(s / 2, 0.0025));
+  const faster = () => setSpeed((s) => Math.min(s * 2, 0.08));
+
+  return (
+    <div className="w-full h-screen relative">
+      {/* Map */}
+      <MapContainer
+        center={[43.195, 12.09]}
+        zoom={13}
+        scrollWheelZoom={true}
+        style={{ height: "100%", width: "100%" }}
+        className="w-full h-full"
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+        {/* Render polylines & animated markers */}
+        {unitData.map((unit, idx) => {
+          const pos = interpolate(unit.path, time);
+          return (
+            <React.Fragment key={idx}>
+              <Polyline positions={unit.path} pathOptions={{ color: unit.color, weight: 3, dashArray: "4 6" }} />
+              <CircleMarker center={pos} radius={6} pathOptions={{ color: unit.color, fillColor: unit.color, fillOpacity: 0.9 }}>
+                <Popup>{unit.name}</Popup>
+              </CircleMarker>
+            </React.Fragment>
+          );
+        })}
+      </MapContainer>
+
+      {/* Control Panel */}
+      <div className="absolute top-4 left-4 z-50 bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl p-4 flex flex-col gap-2 text-sm">
+        <div className="font-semibold text-gray-700">Timeline: {(time * 100).toFixed(0)}%</div>
+        <div className="flex gap-2">
+          <button className="px-3 py-1 rounded-lg bg-gray-800 text-white" onClick={togglePlay}>
+            {playingRef.current ? "Pause" : "Play"}
+          </button>
+          <button className="px-3 py-1 rounded-lg bg-gray-200" onClick={slower}>
+            – Slower
+          </button>
+          <button className="px-3 py-1 rounded-lg bg-gray-200" onClick={faster}>
+            Faster +
+          </button>
+        </div>
+        <p className="mt-1 text-gray-500 max-w-xs">
+          Click on unit markers to see their identity. Use the controls to change playback speed or pause the action.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+
+
